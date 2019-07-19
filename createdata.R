@@ -64,37 +64,30 @@ createdistribution <- function(intervals) {
     }
   }
 
-  # last interval: linear smoothing from below the previous interval's
+  # last interval: exponential decay from below the previous interval's
   # value down to 0
 
   postcenteryears <- intervals$Age[nrow(intervals)] - length(data)
   prevcatremainingmass <- postcenteryears * intervals$CenterVal[nrow(intervals) - 1]
   totalmass <- prevcatremainingmass + intervals$d.x.[nrow(intervals)]
 
-  # in how many parts can we divide the remaining probability mass so that we can
-  # draw a linear function down from just below the previous peak?
-  # possible number of parts: 1, 3, 6 (factorial sequence)
+#  ref <- data[length(data)]
+  ref <- 2*data[length(data)] - data[length(data)-1]
 
-  ref <- data[length(data)]
-
-  # divide probability mass until first cell value is less than ref
-
-  i <- 1
-  nparts <- 1
-  while (intervals$Center[nrow(intervals) - 1] + i < maxage && totalmass * i / nparts >= ref) {
-    i <- i + 1
-    nparts <- nparts + i
-  }
-#  print(paste(intervals$Age[nrow(intervals)], length(data), postcenteryears, ref, totalmass * i / nparts, totalmass, i, nparts))
-
-  # knowing the total number of parts, what's the probability mass for the current age?
-  while (length(data) <= intervals$Center[nrow(intervals) - 1] + i) {
-    x <- totalmass * (intervals$Center[nrow(intervals) - 1] - length(data) + i + 1) / nparts
-    data <- c(data, x)
+  cellstofill <- 2 + maxage - length(data)
+  dv <- 1
+  weights <- exp(-1/dv * 0:(cellstofill - 1))
+  # subtract offset so that last cell is at 0
+  weights <- weights - weights[cellstofill]
+  while (totalmass / sum(weights) > ref && dv < 16) {
+    dv <- dv + 1
+    weights <- exp(-1/dv * 0:(cellstofill - 1))
+    weights <- weights - weights[cellstofill]
+    print(paste(maxage, length(data), cellstofill, totalmass, ref, dv, totalmass / sum(weights)))
   }
 
-  # append any zeros
-  c(data, rep(0, 1 + maxage - length(data)))
+  # last cell is already 0, add another one just to flatten out
+  c(data, totalmass * weights / sum(weights), 0)
 }
 
 calculatecountry <- function(data, malebyfemale = 1) {
