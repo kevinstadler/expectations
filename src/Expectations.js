@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { Button, Modal, UncontrolledPopover, PopoverHeader, PopoverBody } from 'reactstrap';
-//import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Button, Form, FormGroup, Input, Label, Modal, Popover, PopoverHeader, PopoverBody, UncontrolledPopover } from 'reactstrap';
 
 import Select from 'react-select'
 
@@ -60,6 +59,7 @@ class Expectations extends React.Component {
     age = parseInt(age);
 
     this.state = {
+      contactFormVisible: false,
       tableCache: {},
       age: isNaN(age) ? 25 : age,
       sex: sex || 0,
@@ -85,7 +85,7 @@ class Expectations extends React.Component {
 
     // find last non-zero death probability
     ps.reverse();
-    const maxAge = ps.length - 1 - ps.findIndex(v => v != 0)
+    const maxAge = ps.length - 1 - ps.findIndex(v => v > 0)
     ps.reverse();
 
     var totalremainingdensity = ps.slice(updatedState.age).reduce((a, b) => a + b);
@@ -101,17 +101,19 @@ class Expectations extends React.Component {
     mean = mean / totalremainingdensity;
 
     var impendingDeath = ps[updatedState.age];
-    // find upcoming number of years until probability of death exceeds 1%
-    for (var yearsToGo = 1; impendingDeath < 0.01; yearsToGo++) {
+    // find upcoming number of years until probability of death exceeds 1% (ish)
+    for (var yearsToGo = 1; impendingDeath / totalremainingdensity < 0.008; yearsToGo++) {
       impendingDeath += ps[updatedState.age + yearsToGo];
     }
+    // normalise
+    impendingDeath = impendingDeath / totalremainingdensity;
     var factlet = '';
     if (yearsToGo == 1) {
-      factlet = 'you actually have a ' + formatPercent(impendingDeath) + ' chance of dying within the next year.';
+      factlet = <span>a <strong>{formatPercent(impendingDeath)}</strong> chance that you will die <strong>within the next year</strong>.</span>;
     } else if (Math.abs(impendingDeath - 0.01) < .0025) {
-      factlet = 'there is a 1 in 100 chance that you will already die within the next ' + yearsToGo + ' years of your life!';
+      factlet = <span>a 1 in 100 chance that you will already die <strong>within the next {yearsToGo} years</strong> of your life!</span>;
     } else {
-      factlet = 'there is a ' + formatPercent(impendingDeath) + ' chance that you will already die within the next ' + yearsToGo + ' years of your life!';
+      factlet = <span>a <strong>{formatPercent(impendingDeath)}</strong> chance that you will already die within the next {yearsToGo} years of your life!</span>;
     }
 
     var description = "your demographic group";
@@ -170,6 +172,13 @@ class Expectations extends React.Component {
     this.setState({ showModal: false });
   }
 
+  toggleContactForm = (e) => {
+    if (e !== null) {
+      e.preventDefault();
+    }
+    this.setState({ contactFormVisible: ! this.state.contactFormVisible });
+  }
+
   render() {
     return (
       <div>
@@ -185,7 +194,7 @@ class Expectations extends React.Component {
             <Skellie /><Skellie /><Skellie /><Skellie /><Skellie /><Skellie />
           </header>
           <p>
-            <em>life expectancy</em> is a measure that is often used to capture the general health and wealth of a country or population group. but what does it mean for <em>you</em> that the average life expectancy for {this.state.description} is <strong>{formatAge(this.state.meanAtBirth)}</strong> years?
+            <em>life expectancy</em> is a measure that is often used to capture the general health and wealth of a country or population group. but what does it mean for <em>you</em> that your average life expectancy is <strong>{formatAge(this.state.meanAtBirth)}</strong> years?
           </p>
           <h2>all is not so bad!</h2>
           <p>
@@ -194,14 +203,13 @@ class Expectations extends React.Component {
           </p>
           <h2>all is not so good!</h2>
           <p>
-            your new average life expectancy might sound pretty high to you, but not everybody from your cohort lives to exactly that age of course. rather, your own personal remaining life span will be randomly drawn from a statistical distribution, of which the average life expectancy is just a very crude measure.</p>
-          <p>while you might <em>on average</em> still have another <strong>{formatAge(this.state.mean - this.state.age)}</strong> years to live, your average life expectancy belies the fact that {this.state.factlet}</p>
+            your new average life expectancy might sound pretty high to you, but it is actually very unlikely that you will live to exactly that age. rather, your own personal remaining life span will be randomly drawn from a statistical distribution, of which the average life expectancy is just a very crude measure.</p>
+          <p>so while it might be another {formatAge(this.state.mean - this.state.age)} years until you reach your average life expectancy, there is also {this.state.factlet}</p>
           <p>
-            to get an even better grasp of how much you should really be fearing for your life and when, please feel free to explore the probable-age-of-death distribution below, which has been customized for your personal circumstances. enjoy!
+            to get an even better grasp of how much you should really be fearing for your life and when, you can explore the probable-age-of-death distribution below, which you can further tailor to your own personal circumstances. enjoy!
           </p>
           <ExpectationsGraph currentAge={this.state.age} distribution={this.state.distribution} mean={this.state.mean} />
           <UncontrolledPopover trigger="focus" placement="top" target="infobutton">
-            <PopoverHeader>about this distribution</PopoverHeader>
             <PopoverBody>
               <p>because the quality and resolution of mortality data varies from country to country, you might see some things in this distribution which will not seem right to you. if there's weird abrupt jumps in the data, this is probably due to the low quality of the underlying data. you might also see unusually straight lines in the distributions: this is because many countries (particularly developing ones) only know the probability of death per 5 or even 15-year interval, so i've had to employ some (probability-preserving) smoothing to generate some rough approximations of the probable underlying distributions.</p>
               <p>the limitations on available countries and binary sex are also a result of the data collection by the <a href="https://www.who.int/gho/mortality_burden_disease/life_tables/life_tables/en/">WHO</a>, who all of the data shown here eventually goes back to.</p>
@@ -218,7 +226,19 @@ class Expectations extends React.Component {
           </div>
           <footer>
             <p>built in 2019 by <a href="http://kevinstadler.github.io">Kevin Stadler</a>, data by the <a href="https://www.lifetable.de">human life table database</a>.</p>
-            <p>realized you can't possibly spend all of your accumulated fortune in this lifetime? send me your money: <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2JE6FCBYY94LJ"><img src="https://img.shields.io/badge/donate-paypal%20($)-blue.svg" alt="donate US dollars" title="send me your money" /></a> <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WKKFFM6D7ZHEE"><img src="https://img.shields.io/badge/donate-paypal%20(%E2%82%AC)-blue.svg" alt="donate euros" title="send me your money" /></a></p></footer>
+            <Popover placement="top" target="contact" isOpen={this.state.contactFormVisible}>
+              <PopoverBody>
+                <Form>
+                  <Input type="text" name="name" id="name" placeholder="name" />
+                  <Input type="email" name="email" id="email" placeholder="e-mail" />
+                  <Input type="textarea" name="text" id="contacttext" placeholder="your message" />
+                  <Button disabled>under construction</Button>
+                </Form>
+              </PopoverBody>
+            </Popover>
+
+            <p>comments, questions, suggestions? <a href="https://kevinstadler.github.io/#contact" id="contact">contact me</a> before it's too late.</p>
+            <p>realized you can't possibly spend all of your accumulated fortune in this lifetime? send me your money: <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2JE6FCBYY94LJ"><img src="https://img.shields.io/badge/donate-paypal%20($)-lightgray.svg" alt="donate US dollars" title="send me your money" /></a> <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WKKFFM6D7ZHEE"><img src="https://img.shields.io/badge/donate-paypal%20(%E2%82%AC)-lightgray.svg" alt="donate euros" title="send me your money" /></a></p></footer>
         </div>
       </div>
     );
@@ -347,7 +367,7 @@ class ExpectationsGraph extends React.Component {
           data={[ {x: this.props.currentAge, y: 0 } , deathData[0]]}
           style={deathStyle}
           labelComponent={labelComponent} // TODO fix label position
-          labels={() => "you are " + this.props.currentAge + " now (unlike the " + formatPercent(outlived) +  " of your\ncohort who have already died).\nprobability that you will die this year: " + formatPercent(deathData[0].y)}
+          labels={() => "unlike " + formatPercent(outlived) +  " of your cohort who have already\ndied, you survived up to the age of " + this.props.currentAge + ".\nprobability that you will die this year: " + formatPercent(deathData[0].y)}
           />
 
         <VictoryLine
