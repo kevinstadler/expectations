@@ -83,7 +83,7 @@ createdistribution <- function(intervals) {
     dv <- dv + 1
     weights <- exp(-1/dv * 0:(cellstofill - 1))
     weights <- weights - weights[cellstofill]
-    print(paste(maxage, length(data), cellstofill, totalmass, ref, dv, totalmass / sum(weights)))
+#    print(paste(maxage, length(data), cellstofill, totalmass, ref, dv, totalmass / sum(weights)))
   }
 
   # last cell is already 0, add another one just to flatten out
@@ -134,8 +134,9 @@ writetable <- function(data, filename = "world")
 dummy <- mapply(function(table, country) writetable(table, country), validdistributions, names(validdistributions))
 
 countrydata <- data.frame(
-  value=names(validdistributions),
-  label=sapply(names(validdistributions), function(country) countrycode::countrycode(country, 'iso3c', 'country.name')))
+  value=I(names(validdistributions)),
+  label=I(sapply(names(validdistributions), function(country) countrycode::countrycode(country, 'iso3c', 'country.name'))))
+countrydata[match(c('CSK', 'MKD', 'PSE', 'SUN', 'YUG'), countrydata$value), 'label'] <- c('Czechoslovakia (former)', 'North Macedonia', 'Palestine', 'Soviet Union (former)', 'Yugoslavia (former)')
 
 countrydata <- countrydata[order(countrydata$label),]
 json <- jsonlite::toJSON(countrydata)
