@@ -1,12 +1,10 @@
 import React from 'react';
 
-import { Button, Form, FormGroup, Input, Label, Modal, Popover, PopoverHeader, PopoverBody, UncontrolledPopover } from 'reactstrap';
+import { Button, Form, Input, Modal, Popover, PopoverBody, UncontrolledPopover } from 'reactstrap';
 
 import Select from 'react-select'
 
 import { VictoryArea, VictoryAxis, VictoryChart, VictoryLabel, VictoryLine, VictoryTooltip, VictoryVoronoiContainer} from 'victory';
-
-import './App.css';
 
 // data:
 // great quality (full tables) but only 40 countries: https://www.mortality.org/
@@ -49,7 +47,7 @@ class Expectations extends React.Component {
 
     if (window.location.hash.length) {
       const args = window.location.hash.substring(1).split('/');
-      if (args.length == 3) {
+      if (args.length === 3) {
         age = args[0];
         sex = args[1];
         country = args[2];
@@ -64,7 +62,7 @@ class Expectations extends React.Component {
       age: isNaN(age) ? 25 : age,
       sex: sex || 0,
       country: country || 'world',
-      showModal: window.location.hash.length == 0,
+      showModal: window.location.hash.length === 0,
       // avoid errors on first render
       mean: 0,
       meanAtBirth: 0
@@ -108,7 +106,7 @@ class Expectations extends React.Component {
     // normalise
     impendingDeath = impendingDeath / totalremainingdensity;
     var factlet = '';
-    if (yearsToGo == 1) {
+    if (yearsToGo === 1) {
       factlet = <span>a <strong>{formatPercent(impendingDeath)}</strong> chance that you will die <strong>within the next year</strong>.</span>;
     } else if (Math.abs(impendingDeath - 0.01) < .0025) {
       factlet = <span>a 1 in 100 chance that you will already die <strong>within the next {yearsToGo} years</strong> of your life!</span>;
@@ -186,7 +184,7 @@ class Expectations extends React.Component {
         <Skellie /><Skellie /><Skellie /><Skellie /><Skellie /><Skellie />
           <h2>how old are you?</h2>
           <AgeInput value={this.state.age} onChange={this.setAge} />
-          <p className="mobile">NOTE: it looks like you are visiting this website on a touchscreen device. while the website is just as informative when viewed from a phone or tablet, you will find it a lot more entertaining to play with if you access it from a computer with a mouse or trackpad instead.</p>
+          <p className="mobile">NOTE: it looks like you are visiting this website on a touchscreen device. while the website is just as informative when viewed from a phone or tablet, you will find it a lot more entertaining to play with if you access it from a computer with a mouse or trackpad.</p>
           <Button color="secondary" onClick={this.hideModal}>I am prepared to look death in the eye</Button>
         </Modal>
         <div className="content">
@@ -198,15 +196,15 @@ class Expectations extends React.Component {
           </p>
           <h2>all is not so bad!</h2>
           <p>
-            while your average life expectancy at birth was {formatAge(this.state.meanAtBirth)}, by managing to stay alive until the age of {this.state.age} you have already proven that you are not part of the <strong>{formatPercent(this.state.killedOff)}</strong> of people from your population who die before they even make it to that age. well done!</p>
+            while your average life expectancy at birth was {formatAge(this.state.meanAtBirth)}, by managing to stay alive until the age of {this.state.age} you have already proven that you are not part of the <strong>{formatPercent(this.state.killedOff)}</strong> of people who die before they even make it to that age. well done!</p>
           <p>with the knowledge that you haven't died yet, we can re-calculate your individual life expectancy and find out that it is now actually higher than it was at your birth, namely <strong>{formatAge(this.state.mean)}</strong>&nbsp;years. what a treat.
           </p>
           <h2>all is not so good!</h2>
           <p>
-            your new average life expectancy might sound pretty high to you, but it is actually very unlikely that you will live to exactly that age. rather, your own personal remaining life span will be randomly drawn from a statistical distribution, of which the average life expectancy is just a very crude measure.</p>
+            your new average life expectancy might sound pretty high to you, but there is of course no guarantee that you will live to exactly that age, or even anywhere near it. in reality life is much more like a lottery, where your own personal remaining life span will be randomly drawn from a statistical distribution of which the average life expectancy is just a <em>very crude</em> measure.</p>
           <p>so while it might be another {formatAge(this.state.mean - this.state.age)} years until you reach your average life expectancy, there is also {this.state.factlet}</p>
           <p>
-            to get an even better grasp of how much you should really be fearing for your life and when, you can explore the probable-age-of-death distribution below, which you can further tailor to your own personal circumstances. enjoy!
+            to get an even better grasp of how much you should really be fearing for your life and when, please consult the interactive distribution below, which you can even further tailor to your own personal demographic circumstances. enjoy!
           </p>
           <ExpectationsGraph currentAge={this.state.age} distribution={this.state.distribution} mean={this.state.mean} />
           <UncontrolledPopover trigger="focus" placement="top" target="infobutton">
@@ -238,7 +236,7 @@ class Expectations extends React.Component {
             </Popover>
 
             <p>comments, questions, suggestions? <a href="https://kevinstadler.github.io/#contact" id="contact">contact me</a> before it's too late.</p>
-            <p>realized you can't possibly spend all of your accumulated fortune in this lifetime? send me your money: <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2JE6FCBYY94LJ"><img src="https://img.shields.io/badge/donate-paypal%20($)-lightgray.svg" alt="donate US dollars" title="send me your money" /></a> <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WKKFFM6D7ZHEE"><img src="https://img.shields.io/badge/donate-paypal%20(%E2%82%AC)-lightgray.svg" alt="donate euros" title="send me your money" /></a></p></footer>
+            <p>realized you can't possibly spend all of your accumulated fortune in this lifetime? send me your money: <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2JE6FCBYY94LJ"><img src="https://img.shields.io/badge/💀%20%20💀%20%20💀-paypal%20($)-lightgray.svg" alt="give me your dollars" title="send me your money" /></a> <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WKKFFM6D7ZHEE"><img src="https://img.shields.io/badge/💀%20%20💀%20%20💀-paypal%20(%E2%82%AC)-lightgray.svg" alt="give me your euros" title="send me your money" /></a></p></footer>
         </div>
       </div>
     );
@@ -264,6 +262,7 @@ function SexInput (props) {
     options={sexOptions}
     onChange={props.onChange}
     value={ sexOptions.find((el) => el.value === props.value) }
+    placeholder="Select sex..."
     isClearable={true}
   />);
 }
@@ -367,7 +366,7 @@ class ExpectationsGraph extends React.Component {
           data={[ {x: this.props.currentAge, y: 0 } , deathData[0]]}
           style={deathStyle}
           labelComponent={labelComponent} // TODO fix label position
-          labels={() => "unlike " + formatPercent(outlived) +  " of your cohort who have already\ndied, you survived up to the age of " + this.props.currentAge + ".\nprobability that you will die this year: " + formatPercent(deathData[0].y)}
+          labels={() => "by surviving to the age of " + this.props.currentAge + ", you have outlived\n" + formatPercent(outlived) +  " of your cohort who are already dead.\nprobability that you will die this year: " + formatPercent(deathData[0].y)}
           />
 
         <VictoryLine
