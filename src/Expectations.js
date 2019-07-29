@@ -201,7 +201,7 @@ class Expectations extends React.Component {
           </p>
           <h2>all is not so good!</h2>
           <p>
-            your new average life expectancy might sound pretty high to you, but there is of course no guarantee that you will live to exactly that age, or even anywhere near it. in reality life is much more like a lottery, where your own personal remaining life span will be randomly drawn from a statistical distribution of which the average life expectancy is just a <em>very crude</em> measure.</p>
+            your new average life expectancy might sound pretty high to you, but there is of course no guarantee that you will live to exactly that age, or even anywhere near it. in reality life is much more like a <em>lottery</em>, where your own personal remaining life span will be randomly drawn from a statistical distribution of which the average life expectancy is just a <em>very crude</em> measure.</p>
           <p>so while it might be another {formatAge(this.state.mean - this.state.age)} years until you reach your average life expectancy, there is also {this.state.factlet}</p>
           <p>
             to get an even better grasp of how much you should really be fearing for your life and when, please consult the interactive distribution below, which you can even further tailor to your own personal demographic circumstances. enjoy!
@@ -246,7 +246,7 @@ class Expectations extends React.Component {
 export default Expectations;
 
 function AgeInput (props) {
-  const options = Array.apply(null, { length: props.maxAge || 110 }).map(Number.call, Number).map(i => { return { value: i, label: i }});
+  const options = Array.apply(null, { length: props.maxAge - 1 || 109 }).map(Number.call, Number).map(i => { return { value: i + 1, label: i + 1 }});
   return (<Select
     className="age"
     options={options}
