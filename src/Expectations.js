@@ -251,7 +251,7 @@ function AgeInput (props) {
     className="age"
     options={options}
     onChange={props.onChange}
-    value={options[props.value]}
+    value={options[props.value - 1]}
     isClearable={false}
   />);
 }
