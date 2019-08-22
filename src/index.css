@@ -34,8 +34,8 @@ body {
 }
 
 .skellie {
-  width: 15%;
-  max-width: 80px;
+  width: 80px;
+  max-width: 15%;
 }
 
 .content > * {

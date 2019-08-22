@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Button, Form, Input, Modal, Popover, PopoverBody, UncontrolledPopover } from 'reactstrap';
+import { Button, Form, Input, Modal, Popover, PopoverBody, PopoverHeader, UncontrolledPopover } from 'reactstrap';
 
 import Select from 'react-select'
 
@@ -65,19 +65,31 @@ class Expectations extends React.Component {
       showModal: window.location.hash.length === 0,
       // avoid errors on first render
       mean: 0,
-      meanAtBirth: 0
+      meanAtBirth: 0,
+      locationName: 'the world',
+      countries: []
     };
   }
 
-  componentDidMount = () => {
-    this.setCountry({ value: this.state.country });
+  componentWillMount = () => {
+    fetch("countries.json").then((response) => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        // failed to fetch countries information;
+        this.setCountry({ value: 'world' });
+      }
+    }).then((json) => {
+      this.setState({ countries: json });
+      this.setCountry({ value: this.state.country });
+    });
   }
 
   updateDistribution = (stateUpdate) => {
     let updatedState = {...this.state, ...stateUpdate};
     var countryData = updatedState.tableCache[updatedState.country];
     const sexIndex = sexOptions.findIndex((el) => el.value === updatedState.sex) + 1 || 0;
-    updatedState.sex = updatedState.sex ? sexOptions[updatedState] : '';
+//    updatedState.sex = updatedState.sex ? sexOptions[updatedState] : '';
     var ps = countryData[sexIndex].slice();
     var meanAtBirth = formatAge(ps.map((p, i) => p * i).reduce((a, b) => a + b));
 
@@ -142,7 +154,7 @@ class Expectations extends React.Component {
   }
 
   setCountry = (event) => {
-    const country = event ? event.value : "world";
+    const country = event ? event.value : 'world';
     if (!this.state.tableCache[country]) {
       fetch('data/' + country + '.csv').then((response) => {
         if (response.ok && response.headers.get('Content-Type').startsWith('text/csv')) {
@@ -163,6 +175,8 @@ class Expectations extends React.Component {
     } else {
       this.updateDistribution({ country: country });
     }
+    const locationName = this.state.countries.find((el) => el.value === country);
+    this.setState({ locationName: locationName ? locationName.label : 'the world' });
     localStorage.setItem('country', country);
   }
 
@@ -192,7 +206,7 @@ class Expectations extends React.Component {
             <Skellie /><Skellie /><Skellie /><Skellie /><Skellie /><Skellie />
           </header>
           <p>
-            <em>life expectancy</em> is a measure that is often used to capture the general health and wealth of a country or population group. but what does it mean for <em>you</em> that your average life expectancy is <strong>{formatAge(this.state.meanAtBirth)}</strong> years?
+            <em>life expectancy</em> is a measure that is often used to capture the general health and wealth of a country or population group. but what does it mean for you as an individual that the average life expectancy in {this.state.locationName} today is <strong>{formatAge(this.state.meanAtBirth)}</strong> years?
           </p>
           <h2>all is not so bad!</h2>
           <p>
@@ -201,29 +215,33 @@ class Expectations extends React.Component {
           </p>
           <h2>all is not so good!</h2>
           <p>
-            your new average life expectancy might sound pretty high to you, but there is of course no guarantee that you will live to exactly that age, or even anywhere near it. in reality life is much more like a <em>lottery</em>, where your own personal remaining life span will be randomly drawn from a statistical distribution of which the average life expectancy is just a <em>very crude</em> measure.</p>
-          <p>so while it might be another {formatAge(this.state.mean - this.state.age)} years until you reach your average life expectancy, there is also {this.state.factlet}</p>
+            your new average life expectancy might sound pretty high to you, but there is of course no guarantee that you will live to exactly that age, or even anywhere near it. in reality, life is much more random, and so your own personal remaining life span will also be randomly drawn from a statistical distribution of which the average life expectancy is just a <em>very crude</em> measure.</p>
+          <p>in other words, while it might be another {formatAge(this.state.mean - this.state.age)} years until you reach your average life expectancy, there is also {this.state.factlet}</p>
           <p>
-            to get an even better grasp of how much you should really be fearing for your life and when, please consult the interactive distribution below, which you can even further tailor to your own personal demographic circumstances. enjoy!
+            to get an even better grasp of how much you should really be fearing for your life and when, please consult the interactive probability distribution below, which you can even further tailor to your own personal demographic circumstances. enjoy!
           </p>
           <ExpectationsGraph currentAge={this.state.age} distribution={this.state.distribution} mean={this.state.mean} />
+          <h3>adjust demographic features</h3>
+
           <UncontrolledPopover trigger="focus" placement="top" target="infobutton">
+            <PopoverHeader>
+              about the data
+            </PopoverHeader>
             <PopoverBody>
-              <p>because the quality and resolution of mortality data varies from country to country, you might see some things in this distribution which will not seem right to you. if there's weird abrupt jumps in the data, this is probably due to the low quality of the underlying data. you might also see unusually straight lines in the distributions: this is because many countries (particularly developing ones) only know the probability of death per 5 or even 15-year interval, so i've had to employ some (probability-preserving) smoothing to generate some rough approximations of the probable underlying distributions.</p>
-              <p>the limitations on available countries and binary sex are also a result of the data collection by the <a href="https://www.who.int/gho/mortality_burden_disease/life_tables/life_tables/en/">WHO</a>, who all of the data shown here eventually goes back to.</p>
+              <p>because the quality and resolution of mortality data varies from country to country, you might see some things in the distributions shown on this website which will not seem right to you. if there's weird abrupt jumps or unusually straight lines in the distributions, this is most likely due to the low quality of the underlying data: for many countries we only have data about the probability of death per 5 or even 15-year interval, so i've had to employ some (probability-preserving) smoothing to generate rough approximations of the probable underlying distributions.</p>
+              <p>the limitations on available countries and binary sex are also a result of the data gathering and coding by the <a href="https://www.who.int/gho/mortality_burden_disease/life_tables/life_tables/en/">WHO</a>, who all of the data shown here eventually goes back to.</p>
             </PopoverBody>
           </UncontrolledPopover>
-          <h3>change demographic features <Button id="infobutton" color="secondary">?</Button></h3>
-
           <div className="parameters">
             <AgeInput value={this.state.age} maxAge={this.state.maxAge} onChange={this.setAge} />
             <label className="sex">
               <SexInput value={this.state.sex} onChange={this.setSex} />
             </label>
-            <div className="country"><CountrySelect value={this.state.country} onChange={this.setCountry} /></div>
+            <div className="country"><CountrySelect countries={this.state.countries} value={this.state.country} onChange={this.setCountry} /></div>
+            <Button id="infobutton" color="secondary">?</Button>
           </div>
           <footer>
-            <p>built in 2019 by <a href="http://kevinstadler.github.io">Kevin Stadler</a>, data by the <a href="https://www.lifetable.de">human life table database</a>.</p>
+            <p>built in 2019 by <a href="http://kevinstadler.github.io">Kevin Stadler</a>, skellie drawings by baroque artiste <i>Daniela Carnevale</i>, data by the <a href="https://www.lifetable.de">human life table database</a>.</p>
             <Popover placement="top" target="contact" isOpen={this.state.contactFormVisible}>
               <PopoverBody>
                 <Form>
@@ -268,29 +286,11 @@ function SexInput (props) {
 }
 
 class CountrySelect extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { countries: [] };
-  }
-
-  componentDidMount = () => {
-      fetch("countries.json").then((response) => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          console.log("Failed to fetch countries information");
-        }
-      }).then((json) => {
-        this.setState({countries: json});
-      }
-    );
-  }
-
   render() {
     return (<Select
-      options={this.state.countries}
+      options={this.props.countries}
       onChange={this.props.onChange}
-      value={this.state.countries.find((el) => el.value === this.props.value)}
+      value={this.props.countries.find((el) => el.value === this.props.value)}
       isClearable={true}
       placeholder="Select country..."
       />);
@@ -316,10 +316,9 @@ class ExpectationsGraph extends React.Component {
       (this.props.mean % 1.0) *
       (this.props.distribution[Math.ceil(this.props.mean)] - this.props.distribution[Math.floor(this.props.mean)]);
     // generate lots of points along vertical line to improve voronoi
-    var meanData = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(i => {return { x: this.props.mean, y: meanP * i/10 }});
+    var meanData = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(i => {return { x: this.props.mean, y: meanP * i/20 }});
 
     var labelComponent = (<VictoryTooltip
-            dy={(datum) => datum.y }
             flyoutComponent={<LineFlyout />}
             labelComponent={<VictoryLabel style={{ fontSize: 11 }} />}
             flyoutStyle={{fill: "white"}} />);
@@ -333,6 +332,19 @@ class ExpectationsGraph extends React.Component {
           <VictoryVoronoiContainer
 //            style={{  overflow: 'visible' }}}
             className="chart"
+            labelComponent={labelComponent}
+            labels={(d) => {
+              if (d.x < this.props.currentAge) {
+                const ageDesc = d.x === 0 ? 'during the first year of your life' : `when you were ${d.x}`;
+                return(`you didn't die ${ageDesc},\nunlike ${formatPercent(d.y)} of other people\nfrom your cohort. well done!`);
+              } else if (d.x === this.props.currentAge) {
+                return("by surviving to the age of " + this.props.currentAge + ", you have outlived\n" + formatPercent(outlived) +  " of your cohort who are already dead.\nprobability that you will die this year: " + formatPercent(deathData[0].y));
+              } else if (d.x === this.props.mean) {
+                return(`average expected lifetime for somebody\nwho has already survived to age ${this.props.currentAge}:\n${formatAge(this.props.mean)} years`);
+              } else {
+                return("probability that you will\ndie before you turn " + (d.x + 1) + ":\n" + formatPercent(d.c));
+              }
+            }}
 //            voronoiDimension="x"
             />
         }>
@@ -349,31 +361,26 @@ class ExpectationsGraph extends React.Component {
         <VictoryLine
           data={survivedData}
           style={{ data: { stroke: "darkgray", strokeWidth: 1 } }}
-          labelComponent={<VictoryTooltip
-            dy={(datum) => datum.y+10 }
-            flyoutComponent={<LineFlyout />}
-            style={{ fontSize: 11 }} />} // TODO set position
-          labels={(datum) => "you didn't die when you were " + datum.x + ",\nunlike " + formatPercent(datum.y) + " of other people\nfrom your cohort. well done!"}
+//          labelComponent={<VictoryTooltip
+//            dy={(datum) => datum.y+10 }
+//            flyoutComponent={<LineFlyout />}
+//            style={{ fontSize: 11 }} />} // TODO set position
           />
 
         <VictoryArea
           data={deathData}
           style={deathStyle}
-          labelComponent={labelComponent}
-          labels={(datum) => "probability that you will\ndie before you turn " + (datum.x + 1) + ":\n" + formatPercent(datum.c) }
           />
+
         <VictoryLine
           data={[ {x: this.props.currentAge, y: 0 } , deathData[0]]}
           style={deathStyle}
-          labelComponent={labelComponent} // TODO fix label position
-          labels={() => "by surviving to the age of " + this.props.currentAge + ", you have outlived\n" + formatPercent(outlived) +  " of your cohort who are already dead.\nprobability that you will die this year: " + formatPercent(deathData[0].y)}
           />
 
         <VictoryLine
           data={meanData}
           style={{ data: { strokeWidth: 1, stroke: "red", fill: "#eee" } }}
-          labelComponent={<VictoryTooltip style={{ fontSize: 11 }} />} // TODO set position
-          labels={() => "average expected lifetime\nfor somebody aged " + this.props.currentAge + ":\n" + formatAge(this.props.mean) + " years"}
+//          labelComponent={<VictoryTooltip style={{ fontSize: 11 }} />} // TODO set position
           />
       </VictoryChart>
       );
@@ -382,16 +389,15 @@ class ExpectationsGraph extends React.Component {
 
 class LineFlyout extends React.Component {
   render() {
-    const {x, y} = this.props;
+    const {datum, x, y, height} = this.props;
     // model after https://github.com/FormidableLabs/victory/blob/master/packages/victory-tooltip/src/flyout.js#L27
-//    const {width, height} = this.props;
-    const width = 220;
-    const height = 50;
+    const width = 240;
+    const adjustedHeight = height - 15;
     return (
       <g>
-        <rect x={x-0.5} y={y+10} width="1" height={Math.max(0, 250-y-10)} fill="black" />
-        <circle cx={x} cy={y+10} r="2" fill="black"/>
-        <rect x={x-width/2} y={y-45-height/2} width={width} height={height} stroke="black" fill="white" />
+        <rect x={x - 0.5} y={y} width="1" height={Math.max(0, 250 - y)} fill="black" />
+        <circle cx={x} cy={y} r="2" fill="black"/>
+        <rect x={x - width/2} y={y - 41 - adjustedHeight/2} width={width} height={adjustedHeight} stroke="black" fill="white" />
       </g>
     );
   }
@@ -400,10 +406,14 @@ class LineFlyout extends React.Component {
 class Skellie extends React.Component {
   constructor() {
     super();
-    this.state = { dead: Math.random() >= 0.5 };
+    this.state = { skellie: Math.floor(20 * Math.random()) % 20 };
+  }
+
+  changeSkellie = () => {
+    this.setState({ skellie: Math.floor(this.state.skellie + 19 * Math.random()) % 20 })
   }
 
   render() {
-    return (<img className="skellie" alt="a graphic reminder of your mortality" title="what do you expect?" src={this.state.dead + ".png"} onClick={() => this.setState({ dead: !this.state.dead }) } />);
+    return (<img className="skellie" alt="a graphic reminder of your mortality" title="what do you expect?" src={"skellie" + this.state.skellie + ".png"} onClick={this.changeSkellie} />);
   }
 }
