@@ -35,7 +35,7 @@ body {
 
 .skellie {
   width: 80px;
-  max-width: 15%;
+  max-width: 19%;
 }
 
 .content > * {
@@ -93,7 +93,7 @@ p {
 
 .age {
   flex-basis: 8em;
-  max-width: 10em;
+  max-width: 9em;
 }
 
 .sex {

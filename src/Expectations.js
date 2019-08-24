@@ -58,6 +58,7 @@ class Expectations extends React.Component {
 
     this.state = {
       contactFormVisible: false,
+      numSkellies: this.getNumberOfSkellies({ target: window }),
       tableCache: {},
       age: isNaN(age) ? 25 : age,
       sex: sex || 0,
@@ -69,6 +70,14 @@ class Expectations extends React.Component {
       locationName: 'the world',
       countries: []
     };
+
+    window.addEventListener('resize', (e) => {
+      this.setState({ numSkellies: this.getNumberOfSkellies(e) });
+    });
+  }
+
+  getNumberOfSkellies = (e) => {
+    return(Math.max(5, Math.floor((e.target.innerWidth - 40) / 81)));
   }
 
   componentWillMount = () => {
@@ -192,6 +201,7 @@ class Expectations extends React.Component {
   }
 
   render() {
+    const skellies = Array(this.state.numSkellies).fill(<Skellie />);
     return (
       <div>
         <Modal className="firstvisit-dialog" isOpen={this.state.showModal}>
@@ -203,15 +213,15 @@ class Expectations extends React.Component {
         </Modal>
         <div className="content">
           <header>
-            <Skellie /><Skellie /><Skellie /><Skellie /><Skellie /><Skellie />
+            {skellies}
           </header>
           <p>
-            <em>life expectancy</em> is a measure that is often used to capture the general health and wealth of a country or population group. but what does it mean for you as an individual that the average life expectancy in {this.state.locationName} today is <strong>{formatAge(this.state.meanAtBirth)}</strong> years?
+            <em>life expectancy</em> is a measure that is often used to capture the general health and wealth of a country or population group. but what does it mean for you as an individual that the average life expectancy in {this.state.locationName} today is <strong>{formatAge(this.state.meanAtBirth)}</strong>&nbsp;years?
           </p>
           <h2>all is not so bad!</h2>
           <p>
-            while your average life expectancy at birth was {formatAge(this.state.meanAtBirth)}, by managing to stay alive until the age of {this.state.age} you have already proven that you are not part of the <strong>{formatPercent(this.state.killedOff)}</strong> of people who die before they even make it to that age. well done!</p>
-          <p>with the knowledge that you haven't died yet, we can re-calculate your individual life expectancy and find out that it is now actually higher than it was at your birth, namely <strong>{formatAge(this.state.mean)}</strong>&nbsp;years. what a treat.
+            while your average life expectancy at birth was {formatAge(this.state.meanAtBirth)}, by managing to stay alive until today you have already proven that you are not part of the <strong>{formatPercent(this.state.killedOff)}</strong> of all people who die before they even make it to the age of {this.state.age}. well done!</p>
+          <p>with the knowledge that you haven't died yet, we can re-calculate your personal life expectancy and find out that it is now actually higher than it was at your birth, namely <strong>{formatAge(this.state.mean)}</strong>&nbsp;years. what a treat.
           </p>
           <h2>all is not so good!</h2>
           <p>
@@ -318,10 +328,6 @@ class ExpectationsGraph extends React.Component {
     // generate lots of points along vertical line to improve voronoi
     var meanData = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(i => {return { x: this.props.mean, y: meanP * i/20 }});
 
-    var labelComponent = (<VictoryTooltip
-            flyoutComponent={<LineFlyout />}
-            labelComponent={<VictoryLabel style={{ fontSize: 11 }} />}
-            flyoutStyle={{fill: "white"}} />);
     var deathStyle = { data: { stroke: "black", strokeWidth: 1, fill: "#eee" } };
 
     return (
@@ -332,13 +338,17 @@ class ExpectationsGraph extends React.Component {
           <VictoryVoronoiContainer
 //            style={{  overflow: 'visible' }}}
             className="chart"
-            labelComponent={labelComponent}
+            labelComponent={<VictoryTooltip
+//              dy={(d) => (d.x === this.props.currentAge && d.y === 0) ? 2 : 0 }
+              flyoutComponent={<LineFlyout />}
+              labelComponent={<VictoryLabel style={{ fontSize: 11 }} />}
+              flyoutStyle={{ fill: "white" }} />}
             labels={(d) => {
               if (d.x < this.props.currentAge) {
                 const ageDesc = d.x === 0 ? 'during the first year of your life' : `when you were ${d.x}`;
                 return(`you didn't die ${ageDesc},\nunlike ${formatPercent(d.y)} of other people\nfrom your cohort. well done!`);
               } else if (d.x === this.props.currentAge) {
-                return("by surviving to the age of " + this.props.currentAge + ", you have outlived\n" + formatPercent(outlived) +  " of your cohort who are already dead.\nprobability that you will die this year: " + formatPercent(deathData[0].y));
+                return(`by surviving to the age of ${this.props.currentAge}, you have outlived\n${formatPercent(outlived)} of your cohort who are already dead.\nprobability that you will die within\nthe next year of your life: ` + formatPercent(deathData[0].y));
               } else if (d.x === this.props.mean) {
                 return(`average expected lifetime for somebody\nwho has already survived to age ${this.props.currentAge}:\n${formatAge(this.props.mean)} years`);
               } else {
@@ -361,10 +371,6 @@ class ExpectationsGraph extends React.Component {
         <VictoryLine
           data={survivedData}
           style={{ data: { stroke: "darkgray", strokeWidth: 1 } }}
-//          labelComponent={<VictoryTooltip
-//            dy={(datum) => datum.y+10 }
-//            flyoutComponent={<LineFlyout />}
-//            style={{ fontSize: 11 }} />} // TODO set position
           />
 
         <VictoryArea
@@ -380,7 +386,6 @@ class ExpectationsGraph extends React.Component {
         <VictoryLine
           data={meanData}
           style={{ data: { strokeWidth: 1, stroke: "red", fill: "#eee" } }}
-//          labelComponent={<VictoryTooltip style={{ fontSize: 11 }} />} // TODO set position
           />
       </VictoryChart>
       );
@@ -389,15 +394,16 @@ class ExpectationsGraph extends React.Component {
 
 class LineFlyout extends React.Component {
   render() {
-    const {datum, x, y, height} = this.props;
+    const {x, y, dy, height} = this.props;
     // model after https://github.com/FormidableLabs/victory/blob/master/packages/victory-tooltip/src/flyout.js#L27
     const width = 240;
-    const adjustedHeight = height - 15;
+    const adjustedHeight = height - 10;
+    const adjustedY = y;
     return (
       <g>
-        <rect x={x - 0.5} y={y} width="1" height={Math.max(0, 250 - y)} fill="black" />
-        <circle cx={x} cy={y} r="2" fill="black"/>
-        <rect x={x - width/2} y={y - 41 - adjustedHeight/2} width={width} height={adjustedHeight} stroke="black" fill="white" />
+        <rect x={x - 0.5} y={adjustedY} width="1" height={Math.max(0, 250 - adjustedY)} fill="black" />
+        <circle cx={x} cy={adjustedY} r="2" fill="black"/>
+        <rect x={x - width/2} y={adjustedY - 15 - adjustedHeight} width={width} height={adjustedHeight} stroke="black" fill="white" />
       </g>
     );
   }
