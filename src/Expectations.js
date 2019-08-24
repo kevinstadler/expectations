@@ -77,11 +77,11 @@ class Expectations extends React.Component {
   }
 
   getNumberOfSkellies = (e) => {
-    return(Math.max(5, Math.floor((e.target.innerWidth - 40) / 81)));
+    return(Math.max(4, Math.floor((e.target.innerWidth - 40) / 81)));
   }
 
   componentWillMount = () => {
-    fetch("countries.json").then((response) => {
+    fetch('countries.json').then((response) => {
       if (response.ok) {
         return response.json();
       } else {
@@ -154,12 +154,14 @@ class Expectations extends React.Component {
     var age = event.value;
     this.updateDistribution({ 'age': age });
     localStorage.setItem('age', age);
+    window.gtag('event', 'parameter', { 'event_category': 'age', 'event_label': 'age=' + age, value: age });
   }
 
   setSex = (event) => {
     const sex = event ? event.value : '';
     this.updateDistribution({ 'sex': sex });
     localStorage.setItem('sex', sex);
+    window.gtag('event', 'parameter', { 'event_category': 'sex', 'event_label': 'sex=' + sex, value: sex });
   }
 
   setCountry = (event) => {
@@ -170,7 +172,6 @@ class Expectations extends React.Component {
           return response.text();
         } else {
           console.log("Failed to fetch " + country);
-          // TODO unset country
         }
       })
       .then((string) => {
@@ -187,6 +188,7 @@ class Expectations extends React.Component {
     const locationName = this.state.countries.find((el) => el.value === country);
     this.setState({ locationName: locationName ? locationName.label : 'the world' });
     localStorage.setItem('country', country);
+    window.gtag('event', 'parameter', { 'event_category': 'country', 'event_label': 'country=' + country });
   }
 
   hideModal = () => {
@@ -394,7 +396,7 @@ class ExpectationsGraph extends React.Component {
 
 class LineFlyout extends React.Component {
   render() {
-    const {x, y, dy, height} = this.props;
+    const {x, y, height} = this.props;
     // model after https://github.com/FormidableLabs/victory/blob/master/packages/victory-tooltip/src/flyout.js#L27
     const width = 240;
     const adjustedHeight = height - 10;
@@ -412,14 +414,16 @@ class LineFlyout extends React.Component {
 class Skellie extends React.Component {
   constructor() {
     super();
-    this.state = { skellie: Math.floor(20 * Math.random()) % 20 };
+    this.state = { counter: 0, alive: Math.random() >= 0.5, skellie: Math.floor(8 * Math.random()) % 8 };
   }
 
+
   changeSkellie = () => {
-    this.setState({ skellie: Math.floor(this.state.skellie + 19 * Math.random()) % 20 })
+    this.setState({ counter: this.state.counter + 1, alive: ! this.state.alive, skellie: Math.floor(8 * Math.random()) % 8 });
+    window.gtag('event', 'skellie', { 'event_label': 'skellie#' + (this.state.counter + 1), 'value': this.state.counter + 1 });
   }
 
   render() {
-    return (<img className="skellie" alt="a graphic reminder of your mortality" title="what do you expect?" src={"skellie" + this.state.skellie + ".png"} onClick={this.changeSkellie} />);
+    return (<img className="skellie" alt="a graphic reminder of your mortality" title="what do you expect?" src={"skellie" + (this.state.alive ? '0' : '1') + this.state.skellie + ".png"} onClick={this.changeSkellie} />);
   }
 }
