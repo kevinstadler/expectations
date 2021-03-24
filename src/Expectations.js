@@ -109,7 +109,7 @@ class Expectations extends React.Component {
 
     var totalremainingdensity = ps.slice(updatedState.age).reduce((a, b) => a + b);
 
-    if (totalremainingdensity == 0) {
+    if (totalremainingdensity === 0) {
       // limit age to highest category of distribution
       updatedState.age = maxAge;
       totalremainingdensity = ps.slice(updatedState.age).reduce((a, b) => a + b);
@@ -253,7 +253,7 @@ class Expectations extends React.Component {
             <Button id="infobutton" color="secondary">?</Button>
           </div>
           <footer>
-            <p>built in 2019 by <a href="http://kevinstadler.github.io">Kevin Stadler</a>, skellie drawings by baroque artiste <i>Daniela Carnevale</i>, data by the <a href="https://www.lifetable.de">human life table database</a>.</p>
+            <p>a service provided by the <a href="https://thiswasyouridea.com">Futile Software Corporation</a>. skellie drawings by baroque artiste Daniela Carnevale, data by the <a href="https://www.lifetable.de">human life table database</a>.</p>
             <Popover placement="top" target="contact" isOpen={this.state.contactFormVisible}>
               <PopoverBody>
                 <Form>
@@ -265,8 +265,8 @@ class Expectations extends React.Component {
               </PopoverBody>
             </Popover>
 
-            <p>comments, questions, suggestions? <a href="https://kevinstadler.github.io/#contact" id="contact">contact me</a> before it's too late.</p>
-            <p>realized you can't possibly spend all of your accumulated fortune in this lifetime? send me your money: <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2JE6FCBYY94LJ"><img src="https://img.shields.io/badge/💀%20%20💀%20%20💀-paypal%20($)-lightgray.svg" alt="give me your dollars" title="send me your money" /></a> <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WKKFFM6D7ZHEE"><img src="https://img.shields.io/badge/💀%20%20💀%20%20💀-paypal%20(%E2%82%AC)-lightgray.svg" alt="give me your euros" title="send me your money" /></a></p></footer>
+            <p>comments, questions, suggestions? <a href="https://kevinstadler.github.io/#contact" id="contact">reach out</a> before it's too late.</p>
+            <p>realized you can't possibly spend all of your accumulated fortune in this lifetime? send us your money: <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2JE6FCBYY94LJ"><img src="https://img.shields.io/badge/💀%20%20💀%20%20💀%20-paypal%20($)-lightgray.svg" alt="give me your dollars" title="send me your money" /></a> <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WKKFFM6D7ZHEE"><img src="https://img.shields.io/badge/💀%20%20💀%20%20💀%20-paypal%20(%E2%82%AC)-lightgray.svg" alt="give me your euros" title="send me your money" /></a></p></footer>
         </div>
       </div>
     );
@@ -335,10 +335,10 @@ class ExpectationsGraph extends React.Component {
     return (
       <VictoryChart
         minDomain={{ x: 0, y: 0 }}
+        maxDomain={{ y: .105 }}
         containerComponent={
           // use Voronoi Container to enable tooltip on line chart
           <VictoryVoronoiContainer
-//            style={{  overflow: 'visible' }}}
             className="chart"
             labelComponent={<VictoryTooltip
 //              dy={(d) => (d.x === this.props.currentAge && d.y === 0) ? 2 : 0 }

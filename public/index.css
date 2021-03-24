@@ -1,1 +1,140 @@
-../src/index.css
+body {
+  text-align: center;
+  line-height: 1.25em;
+  margin: 0;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.firstvisit-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin: auto;
+  max-width: 100%;
+  width: 100%;
+  height: 100%;
+  z-index:1050;
+  overflow: hidden;
+  outline: 0;
+  background: white;
+}
+
+.modal-content {
+  display: initial;
+  text-align: center;
+}
+
+.modal-content > * {
+  margin: 5vh auto;
+}
+
+.skellie {
+  width: 80px;
+  max-width: 19%;
+}
+
+.content > * {
+	width: 100%;
+}
+
+header {
+  margin-bottom: 20px;
+}
+
+h2 {
+  font-size: 135%;
+  font-weight: bold;
+  font-style: italic;
+}
+
+h3 {
+  font-size: 115%;
+  font-weight: bold;
+  font-style: italic;
+}
+
+p {
+  font-size: 90%;
+	max-width: 35em;
+	text-align: justify;
+	margin: 16px auto;
+}
+
+.chart {
+  margin: auto;
+  max-width: 45em;
+  overflow: visible;
+}
+
+.chart > svg:not(:root) {
+  overflow: visible;
+}
+
+#infobutton {
+  font-size: 80%;
+  padding: 1px 8px;
+}
+
+.parameters {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.parameters > * {
+  margin: 5px;
+}
+
+.age {
+  flex-basis: 8em;
+  max-width: 9em;
+}
+
+.sex {
+  flex-basis: 9em;
+}
+
+.country {
+  flex-basis: 15em;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+  monospace;
+}
+
+footer {
+  max-width: 90%;
+  background-color: #f8f8f8;
+  margin: 50px auto 0 auto;
+  padding: 1px;
+}
+
+footer > p {
+  text-align: center;
+  font-size: 80%;
+}
+
+footer img {
+  vertical-align: text-bottom;
+  height: 1.3em;
+}
+
+.mobile {
+  display: none;
+}
+
+/* alternatively: @media (pointer: none) { */
+@media (hover: none) {
+  .mobile {
+    display: initial;
+    width: 80%;
+    max-width: 35em;
+  }
+}

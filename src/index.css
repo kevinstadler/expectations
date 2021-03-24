@@ -60,15 +60,16 @@ h3 {
 
 p {
   font-size: 90%;
-	max-width: 35em;
-	text-align: justify;
-	margin: 16px auto;
+  max-width: 35em;
+  text-align: justify;
+  margin: 1.1em auto;
 }
 
 .chart {
   margin: auto;
   max-width: 45em;
   overflow: visible;
+  margin-top: -4em;
 }
 
 .chart > svg:not(:root) {
@@ -114,11 +115,13 @@ footer {
   background-color: #f8f8f8;
   margin: 50px auto 0 auto;
   padding: 1px;
+  font-style: italic;
 }
 
 footer > p {
   text-align: center;
   font-size: 80%;
+  margin: .8em auto;
 }
 
 footer img {
